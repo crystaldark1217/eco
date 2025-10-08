@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
+require('dotenv').config(); // Load environment variables first
+
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const mongoose = require('mongoose');
 
 console.log('🌱 EcoQuest Setup Script');
 console.log('========================\n');
@@ -51,11 +54,8 @@ PORT=3000
 NODE_ENV=development
 
 # Database Configuration
-# For local MongoDB (default):
-MONGODB_URI=mongodb+srv://poroject:project@cluster0.pl3dl2i.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-
-# For MongoDB Atlas (cloud database):
-# MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/ecoquest?retryWrites=true&w=majority
+# MongoDB connection URI (add your own):
+# MONGODB_URI=
 
 # Security Keys
 JWT_SECRET=ecoquest-jwt-secret-key-2024
@@ -72,11 +72,12 @@ ALLOWED_FILE_TYPES=image/jpeg,image/png,image/gif,image/webp`;
 // Check MongoDB connection
 console.log('\n🔍 Checking MongoDB connection...');
 
-const mongoose = require('mongoose');
-
 async function checkMongoDB() {
     try {
-        const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ecoquest';
+        const mongoURI = process.env.MONGODB_URI;
+        if (!mongoURI) {
+            throw new Error('MONGODB_URI not set in environment');
+        }
         await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -88,6 +89,7 @@ async function checkMongoDB() {
         return true;
     } catch (error) {
         console.log('❌ MongoDB connection failed');
+        console.log(`Error: ${error.message}`);
         console.log('\n📋 MongoDB Setup Options:');
         console.log('1. Install MongoDB locally:');
         console.log('   - Download: https://www.mongodb.com/try/download/community');
@@ -104,7 +106,6 @@ async function checkMongoDB() {
 
 // Run setup
 (async () => {
-    require('dotenv').config();
     const mongoConnected = await checkMongoDB();
     
     console.log('\n🎉 Setup Complete!');
