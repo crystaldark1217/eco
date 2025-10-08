@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - EcoQuest</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-leaf"></i>
+                <span>EcoQuest</span>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard">Dashboard</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="profile-container">
+            <div id="alert-container"></div>
+
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div id="profile-picture-container">
+                    <img id="profile-picture" src="" alt="Profile Picture" class="profile-picture" style="display: none;">
+                    <div id="default-avatar" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #4CAF50, #45a049); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 3rem;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <h1 id="profile-username">Loading...</h1>
+                <p id="profile-email" style="color: #666; margin-bottom: 1rem;">Loading...</p>
+                
+                <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 1.5rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #4CAF50;" id="profile-points">0</div>
+                        <div style="color: #666; font-size: 0.9rem;">Total Points</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #2196F3;" id="profile-level">1</div>
+                        <div style="color: #666; font-size: 0.9rem;">Current Level</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #FF9800;" id="profile-challenges">0</div>
+                        <div style="color: #666; font-size: 0.9rem;">Completed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Form -->
+            <div class="profile-form">
+                <h2 style="margin-bottom: 1.5rem; color: #2d5a27;">
+                    <i class="fas fa-edit"></i>
+                    Edit Profile
+                </h2>
+
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="username">
+                            <i class="fas fa-user"></i>
+                            Username
+                        </label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            Email Address
+                        </label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profilePicture">
+                            <i class="fas fa-camera"></i>
+                            Profile Picture
+                        </label>
+                        <input type="file" id="profilePicture" name="profilePicture" accept="image/*">
+                        <small style="color: #666; font-size: 0.9rem;">
+                            Upload a new profile picture (optional)
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                        <i class="fas fa-save"></i>
+                        <span id="save-text">Save Changes</span>
+                        <span id="save-loading" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e0e0e0;">
+                    <h3 style="margin-bottom: 1rem; color: #2d5a27;">
+                        <i class="fas fa-chart-line"></i>
+                        Progress Overview
+                    </h3>
+                    
+                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span style="font-weight: 600; color: #2d5a27;">Level Progress</span>
+                            <span id="progress-text" style="color: #666; font-size: 0.9rem;">0 / 100 points to next level</span>
+                        </div>
+                        <div style="background: #e0e0e0; border-radius: 10px; height: 20px; overflow: hidden;">
+                            <div id="progress-bar" style="background: linear-gradient(135deg, #4CAF50, #45a049); height: 100%; width: 0%; transition: width 0.3s ease; border-radius: 10px;"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                        <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <i class="fas fa-check-circle" style="font-size: 1.5rem; color: #4CAF50; margin-bottom: 0.5rem;"></i>
+                            <div style="font-weight: bold; color: #2d5a27;" id="approved-challenges">0</div>
+                            <div style="color: #666; font-size: 0.9rem;">Approved</div>
+                        </div>
+                        <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <i class="fas fa-clock" style="font-size: 1.5rem; color: #FF9800; margin-bottom: 0.5rem;"></i>
+                            <div style="font-weight: bold; color: #2d5a27;" id="pending-challenges">0</div>
+                            <div style="color: #666; font-size: 0.9rem;">Pending</div>
+                        </div>
+                        <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <i class="fas fa-calendar-day" style="font-size: 1.5rem; color: #2196F3; margin-bottom: 0.5rem;"></i>
+                            <div style="font-weight: bold; color: #2d5a27;" id="days-active">0</div>
+                            <div style="color: #666; font-size: 0.9rem;">Days Active</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e0e0e0;">
+                    <h3 style="margin-bottom: 1rem; color: #2d5a27;">
+                        <i class="fas fa-trophy"></i>
+                        Achievements
+                    </h3>
+                    
+                    <div id="achievements-container">
+                        <!-- Achievements will be populated here -->
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e0e0e0;">
+                    <h3 style="margin-bottom: 1rem; color: #2d5a27;">
+                        <i class="fas fa-chart-bar"></i>
+                        Analytics & Impact
+                    </h3>
+                    
+                    <div id="analytics-container">
+                        <!-- Analytics will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-leaf"></i>
+                    <span>EcoQuest</span>
+                </div>
+                <div class="footer-links">
+                    <a href="/dashboard">Dashboard</a>
+                    <a href="#" onclick="logout()">Logout</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 EcoQuest. Making the world greener, one challenge at a time.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let userProfile = null;
+        
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token || !user.id) {
+                window.location.href = '/login';
+                return false;
+            }
+            
+            if (user.isAdmin) {
+                window.location.href = '/admin';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+        
+        // Load user profile
+        async function loadUserProfile() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    userProfile = await response.json();
+                    displayProfile();
+                    populateForm();
+                    updateProgress();
+                    displayAchievements();
+                } else {
+                    throw new Error('Failed to load profile');
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showAlert('Error loading profile. Please refresh the page.', 'error');
+            }
+        }
+        
+        // Display profile information
+        function displayProfile() {
+            if (!userProfile) return;
+            
+            document.getElementById('profile-username').textContent = userProfile.username;
+            document.getElementById('profile-email').textContent = userProfile.email;
+            document.getElementById('profile-points').textContent = userProfile.points;
+            document.getElementById('profile-level').textContent = userProfile.level;
+            
+            const completedCount = userProfile.completedChallenges.filter(c => c.approved).length;
+            document.getElementById('profile-challenges').textContent = completedCount;
+            
+            // Profile picture
+            if (userProfile.profilePicture) {
+                document.getElementById('profile-picture').src = userProfile.profilePicture;
+                document.getElementById('profile-picture').style.display = 'block';
+                document.getElementById('default-avatar').style.display = 'none';
+            } else {
+                document.getElementById('profile-picture').style.display = 'none';
+                document.getElementById('default-avatar').style.display = 'flex';
+            }
+        }
+        
+        // Populate form with current data
+        function populateForm() {
+            if (!userProfile) return;
+            
+            document.getElementById('username').value = userProfile.username;
+            document.getElementById('email').value = userProfile.email;
+        }
+        
+        // Update progress information
+        function updateProgress() {
+            if (!userProfile) return;
+            
+            const currentLevelPoints = userProfile.points % 100;
+            const progressPercentage = currentLevelPoints;
+            
+            document.getElementById('progress-bar').style.width = progressPercentage + '%';
+            document.getElementById('progress-text').textContent = `${currentLevelPoints} / 100 points to next level`;
+            
+            const approvedCount = userProfile.completedChallenges.filter(c => c.approved).length;
+            const pendingCount = userProfile.completedChallenges.filter(c => !c.approved).length;
+            
+            document.getElementById('approved-challenges').textContent = approvedCount;
+            document.getElementById('pending-challenges').textContent = pendingCount;
+            
+            // Calculate days active (simplified - from creation date)
+            const createdDate = new Date(userProfile.createdAt);
+            const today = new Date();
+            const daysActive = Math.floor((today - createdDate) / (1000 * 60 * 60 * 24));
+            document.getElementById('days-active').textContent = daysActive;
+        }
+        
+        // Display achievements
+        function displayAchievements() {
+            if (!userProfile) return;
+            
+            const achievements = [];
+            
+            // Define achievements based on user stats
+            const approvedChallenges = userProfile.completedChallenges.filter(c => c.approved).length;
+            const points = userProfile.points;
+            const level = userProfile.level;
+            
+            // First Challenge
+            if (approvedChallenges >= 1) {
+                achievements.push({
+                    icon: 'fa-seedling',
+                    title: 'First Steps',
+                    description: 'Completed your first challenge',
+                    color: '#4CAF50',
+                    earned: true
+                });
+            }
+            
+            // Challenge Milestones
+            if (approvedChallenges >= 5) {
+                achievements.push({
+                    icon: 'fa-fire',
+                    title: 'Getting Started',
+                    description: 'Completed 5 challenges',
+                    color: '#FF9800',
+                    earned: true
+                });
+            }
+            
+            if (approvedChallenges >= 10) {
+                achievements.push({
+                    icon: 'fa-star',
+                    title: 'Eco Enthusiast',
+                    description: 'Completed 10 challenges',
+                    color: '#2196F3',
+                    earned: true
+                });
+            }
+            
+            if (approvedChallenges >= 25) {
+                achievements.push({
+                    icon: 'fa-crown',
+                    title: 'Eco Champion',
+                    description: 'Completed 25 challenges',
+                    color: '#9C27B0',
+                    earned: true
+                });
+            }
+            
+            // Level Achievements
+            if (level >= 5) {
+                achievements.push({
+                    icon: 'fa-trophy',
+                    title: 'Level Master',
+                    description: 'Reached Level 5',
+                    color: '#FF5722',
+                    earned: true
+                });
+            }
+            
+            if (level >= 10) {
+                achievements.push({
+                    icon: 'fa-medal',
+                    title: 'Eco Legend',
+                    description: 'Reached Level 10',
+                    color: '#795548',
+                    earned: true
+                });
+            }
+            
+            // Points Achievements
+            if (points >= 100) {
+                achievements.push({
+                    icon: 'fa-gem',
+                    title: 'Point Collector',
+                    description: 'Earned 100 points',
+                    color: '#E91E63',
+                    earned: true
+                });
+            }
+            
+            if (points >= 500) {
+                achievements.push({
+                    icon: 'fa-diamond',
+                    title: 'Point Master',
+                    description: 'Earned 500 points',
+                    color: '#3F51B5',
+                    earned: true
+                });
+            }
+            
+            // Add some locked achievements
+            const lockedAchievements = [
+                { icon: 'fa-globe', title: 'World Changer', description: 'Complete 50 challenges', color: '#607D8B', earned: false },
+                { icon: 'fa-infinity', title: 'Eco Infinity', description: 'Reach Level 20', color: '#607D8B', earned: false },
+                { icon: 'fa-rocket', title: 'Eco Rocket', description: 'Earn 1000 points', color: '#607D8B', earned: false }
+            ];
+            
+            achievements.push(...lockedAchievements);
+            
+            const container = document.getElementById('achievements-container');
+            
+            if (achievements.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Complete challenges to unlock achievements!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    ${achievements.map(achievement => `
+                        <div style="background: ${achievement.earned ? 'white' : '#f5f5f5'}; border: 2px solid ${achievement.earned ? achievement.color : '#e0e0e0'}; border-radius: 8px; padding: 1rem; text-align: center; ${achievement.earned ? '' : 'opacity: 0.6;'}">
+                            <i class="fas ${achievement.icon}" style="font-size: 2rem; color: ${achievement.earned ? achievement.color : '#ccc'}; margin-bottom: 0.5rem;"></i>
+                            <h4 style="margin-bottom: 0.5rem; color: ${achievement.earned ? '#2d5a27' : '#999'};">${achievement.title}</h4>
+                            <p style="color: #666; font-size: 0.9rem; margin: 0;">${achievement.description}</p>
+                            ${achievement.earned ? 
+                                '<div style="margin-top: 0.5rem; color: #4CAF50; font-size: 0.8rem; font-weight: 600;"><i class="fas fa-check"></i> Unlocked</div>' : 
+                                '<div style="margin-top: 0.5rem; color: #999; font-size: 0.8rem;"><i class="fas fa-lock"></i> Locked</div>'
+                            }
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // Handle profile form submission
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const profilePicture = document.getElementById('profilePicture').files[0];
+            const saveText = document.getElementById('save-text');
+            const saveLoading = document.getElementById('save-loading');
+            
+            // Show loading state
+            saveText.style.display = 'none';
+            saveLoading.style.display = 'inline-block';
+            
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('email', email);
+                if (profilePicture) {
+                    formData.append('profilePicture', profilePicture);
+                }
+                
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    userProfile = data;
+                    
+                    // Update localStorage
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    user.username = data.username;
+                    user.email = data.email;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    showAlert('Profile updated successfully!', 'success');
+                    displayProfile();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error updating profile. Please try again.', 'error');
+            } finally {
+                // Reset loading state
+                saveText.style.display = 'inline';
+                saveLoading.style.display = 'none';
+            }
+        });
+        
+        // Show alert
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    <i class="fas ${icon}"></i>
+                    ${message}
+                </div>
+            `;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+        
+        // Initialize profile page
+        window.addEventListener('load', async () => {
+            if (!checkAuth()) return;
+            
+            await loadUserProfile();
+        });
+    </script>
+</body>
+</html>

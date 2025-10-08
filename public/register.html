@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - EcoQuest</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-leaf"></i>
+                <span>EcoQuest</span>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/login">Login</a>
+                <a href="/admin-login">Admin</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="form-container">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <i class="fas fa-leaf" style="font-size: 3rem; color: #4CAF50; margin-bottom: 1rem;"></i>
+                <h1 style="color: #2d5a27; margin-bottom: 0.5rem;">Join EcoQuest!</h1>
+                <p style="color: #666;">Start your eco-friendly journey today</p>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i>
+                        Username
+                    </label>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="Choose a unique username">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="your.email@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        Password
+                    </label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Create a strong password" minlength="6">
+                    <small style="color: #666; font-size: 0.9rem;">
+                        Password must be at least 6 characters long
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">
+                        <i class="fas fa-lock"></i>
+                        Confirm Password
+                    </label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required 
+                           placeholder="Confirm your password">
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="terms" required>
+                        <span>I agree to the Terms of Service and Privacy Policy</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                    <i class="fas fa-user-plus"></i>
+                    <span id="register-text">Create Account</span>
+                    <span id="register-loading" class="loading" style="display: none;"></span>
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <p style="color: #666; margin-bottom: 1rem;">Already have an account?</p>
+                <a href="/login" class="btn btn-secondary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Sign In
+                </a>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e0e0e0;">
+                <div style="background: #f0f8f0; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #4CAF50;">
+                    <h3 style="color: #2d5a27; margin-bottom: 1rem;">
+                        <i class="fas fa-gift"></i>
+                        Welcome Bonus!
+                    </h3>
+                    <p style="color: #666; margin: 0;">
+                        Get started with <strong>10 bonus points</strong> when you complete your first challenge!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-leaf"></i>
+                    <span>EcoQuest</span>
+                </div>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/login">Login</a>
+                    <a href="/admin-login">Admin</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 EcoQuest. Making the world greener, one challenge at a time.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const terms = document.getElementById('terms').checked;
+            const registerText = document.getElementById('register-text');
+            const registerLoading = document.getElementById('register-loading');
+            const alertContainer = document.getElementById('alert-container');
+            
+            // Clear previous alerts
+            alertContainer.innerHTML = '';
+            
+            // Validation
+            if (password !== confirmPassword) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Passwords do not match.
+                    </div>
+                `;
+                return;
+            }
+            
+            if (!terms) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Please accept the Terms of Service and Privacy Policy.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Show loading state
+            registerText.style.display = 'none';
+            registerLoading.style.display = 'inline-block';
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, email, password }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store token in localStorage
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    // Show success message
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            Account created successfully! Redirecting to your dashboard...
+                        </div>
+                    `;
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    // Show error message
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            ${data.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Network error. Please try again.
+                    </div>
+                `;
+            } finally {
+                // Reset loading state
+                registerText.style.display = 'inline';
+                registerLoading.style.display = 'none';
+            }
+        });
+
+        // Real-time password confirmation validation
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (confirmPassword && password !== confirmPassword) {
+                this.style.borderColor = '#f44336';
+            } else {
+                this.style.borderColor = '#ddd';
+            }
+        });
+
+        // Check if user is already logged in
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (token && user.id && !user.isAdmin) {
+                window.location.href = '/dashboard';
+            }
+        });
+    </script>
+</body>
+</html>

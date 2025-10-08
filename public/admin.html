@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - EcoQuest</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-leaf"></i>
+                <span>EcoQuest Admin</span>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="admin-panel">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Admin Dashboard</h1>
+                <p>Manage users and moderate challenge submissions</p>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <!-- Unauthorized Access Message (shown when not authenticated) -->
+            <div id="unauthorized-section" style="display: none;">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h2 class="empty-state-title">Unauthorized Access</h2>
+                    <p class="empty-state-description">
+                        You need to be logged in as an administrator to access this page.
+                    </p>
+                    <a href="/admin-login" class="btn btn-admin btn-large">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Go to Admin Login
+                    </a>
+                </div>
+            </div>
+
+            <!-- Admin Panel (shown when authenticated) -->
+            <div id="admin-content" style="display: none;">
+                <!-- Admin Tabs -->
+                <div class="admin-tabs">
+                    <button class="tab-button active" onclick="switchTab('users')">
+                        <i class="fas fa-users"></i>
+                        Users Management
+                    </button>
+                    <button class="tab-button" onclick="switchTab('approvals')">
+                        <i class="fas fa-clock"></i>
+                        Pending Approvals
+                        <span id="pending-count" class="badge" style="background: #FF9800; color: white; padding: 0.2rem 0.5rem; border-radius: 10px; margin-left: 0.5rem; font-size: 0.8rem;">0</span>
+                    </button>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="users-tab" class="tab-content active">
+                    <div class="users-table">
+                        <h3 style="margin-bottom: 1.5rem; color: #2d5a27;">
+                            <i class="fas fa-users"></i>
+                            Registered Users
+                        </h3>
+                        <div id="users-container">
+                            <div style="text-align: center; padding: 2rem; color: #666;">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                <p>Loading users...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approvals Tab -->
+                <div id="approvals-tab" class="tab-content">
+                    <div class="approvals-table">
+                        <h3 style="margin-bottom: 1.5rem; color: #2d5a27;">
+                            <i class="fas fa-clock"></i>
+                            Challenge Approvals
+                        </h3>
+                        <div id="approvals-container">
+                            <div style="text-align: center; padding: 2rem; color: #666;">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                <p>Loading pending approvals...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-leaf"></i>
+                    <span>EcoQuest</span>
+                </div>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/login">Login</a>
+                    <a href="/register">Register</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 EcoQuest. Making the world greener, one challenge at a time.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="toast.js"></script>
+    <script src="modal.js"></script>
+    <script>
+        let users = [];
+        let pendingApprovals = [];
+        
+        // Check admin authentication
+        function checkAdminAuth() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (token && user.id && user.isAdmin) {
+                document.getElementById('unauthorized-section').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                return true;
+            } else {
+                document.getElementById('unauthorized-section').style.display = 'block';
+                document.getElementById('admin-content').style.display = 'none';
+                return false;
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login';
+        }
+        
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+        
+        // Load users
+        async function loadUsers() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    users = await response.json();
+                    displayUsers();
+                } else {
+                    throw new Error('Failed to load users');
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('users-container').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #f44336;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Error loading users. Please refresh the page.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Display users
+        function displayUsers() {
+            const container = document.getElementById('users-container');
+            
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>No users registered yet.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Points</th>
+                            <th>Level</th>
+                            <th>Challenges</th>
+                            <th>Joined</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr id="user-row-${user._id}">
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        ${user.profilePicture ? 
+                                            `<img src="${user.profilePicture}" alt="Profile" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">` : 
+                                            '<i class="fas fa-user-circle" style="font-size: 1.5rem; color: #ccc;"></i>'
+                                        }
+                                        <strong>${user.username}</strong>
+                                    </div>
+                                </td>
+                                <td>${user.email}</td>
+                                <td>
+                                    <span style="background: linear-gradient(135deg, #4CAF50, #45a049); color: white; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">
+                                        ${user.points} pts
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="background: linear-gradient(135deg, #2196F3, #1976D2); color: white; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">
+                                        Level ${user.level}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="font-size: 0.9rem;">
+                                        <div style="color: #4CAF50;">✓ ${user.completedChallenges.filter(c => c.approved).length} Approved</div>
+                                        <div style="color: #FF9800;">⏳ ${user.completedChallenges.filter(c => !c.approved).length} Pending</div>
+                                    </div>
+                                </td>
+                                <td style="font-size: 0.9rem; color: #666;">
+                                    ${new Date(user.createdAt).toLocaleDateString()}
+                                </td>
+                                <td>
+                                    <span style="background: ${user.isAdmin ? '#FF9800' : '#4CAF50'}; color: white; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">
+                                        ${user.isAdmin ? 'Admin' : 'User'}
+                                    </span>
+                                </td>
+                                <td>
+                                    ${!user.isAdmin ? `
+                                        <button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" 
+                                                onclick="confirmDeleteUser('${user._id}', '${user.username}')">
+                                            <i class="fas fa-trash"></i>
+                                            Remove
+                                        </button>
+                                    ` : `
+                                        <span style="color: #999; font-size: 0.85rem;">
+                                            <i class="fas fa-shield-alt"></i>
+                                            Protected
+                                        </span>
+                                    `}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // Load pending approvals
+        async function loadPendingApprovals() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/admin/pending-approvals', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    pendingApprovals = await response.json();
+                    displayPendingApprovals();
+                    updatePendingCount();
+                } else {
+                    throw new Error('Failed to load pending approvals');
+                }
+            } catch (error) {
+                console.error('Error loading pending approvals:', error);
+                document.getElementById('approvals-container').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #f44336;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Error loading pending approvals. Please refresh the page.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Update pending count badge
+        function updatePendingCount() {
+            document.getElementById('pending-count').textContent = pendingApprovals.length;
+        }
+        
+        // Display pending approvals
+        function displayPendingApprovals() {
+            const container = document.getElementById('approvals-container');
+            
+            if (pendingApprovals.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 1rem; color: #4CAF50;"></i>
+                        <p>No pending approvals at the moment.</p>
+                        <p>All challenges have been reviewed!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = pendingApprovals.map(approval => `
+                <div class="approval-item">
+                    <div class="approval-header">
+                        <div>
+                            <h4 style="color: #2d5a27; margin-bottom: 0.5rem;">
+                                <i class="fas fa-user"></i>
+                                ${approval.username}
+                            </h4>
+                            <p style="color: #666; margin: 0;">
+                                <i class="fas fa-tasks"></i>
+                                ${approval.challengeTitle}
+                            </p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #FF9800; font-weight: 600; margin-bottom: 0.5rem;">
+                                <i class="fas fa-star"></i>
+                                ${approval.points} Points
+                            </div>
+                            <div style="color: #666; font-size: 0.9rem;">
+                                ${new Date(approval.completedAt).toLocaleDateString()}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${approval.photoUrl ? `
+                        <div style="margin: 1rem 0;">
+                            <p style="margin-bottom: 0.5rem; font-weight: 600; color: #2d5a27;">
+                                <i class="fas fa-camera"></i>
+                                Submitted Photo:
+                            </p>
+                            <img src="${approval.photoUrl}" alt="Challenge completion" class="approval-photo"
+                                 onclick="window.open('${approval.photoUrl}', '_blank')"
+                                 style="cursor: pointer; border: 2px solid #e0e0e0; transition: border-color 0.3s ease;"
+                                 onmouseover="this.style.borderColor='#4CAF50'"
+                                 onmouseout="this.style.borderColor='#e0e0e0'">
+                        </div>
+                    ` : ''}
+                    
+                    <div class="approval-actions">
+                        <button class="btn btn-success" onclick="approveChallenge('${approval.userId}', '${approval.challengeId}', true)">
+                            <i class="fas fa-check"></i>
+                            Approve
+                        </button>
+                        <button class="btn btn-danger" onclick="approveChallenge('${approval.userId}', '${approval.challengeId}', false)">
+                            <i class="fas fa-times"></i>
+                            Reject
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Approve/reject challenge
+        async function approveChallenge(userId, challengeId, approved) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/admin/approve-challenge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ userId, challengeId, approved })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert(data.message, 'success');
+                    // Reload data
+                    await loadUsers();
+                    await loadPendingApprovals();
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        showAlert('Authentication failed. Please login again.', 'error');
+                        setTimeout(() => {
+                            window.location.href = '/admin-login';
+                        }, 2000);
+                    } else {
+                        showAlert(data.message || 'Error processing approval', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Approval error:', error);
+                showAlert('Error processing approval. Please try again.', 'error');
+            }
+        }
+        
+        // Confirm delete user
+        async function confirmDeleteUser(userId, username) {
+            const confirmed = await modal.danger(
+                `You are about to permanently remove <strong>"${username}"</strong> from the platform.<br><br>` +
+                `This action will:<br>` +
+                `• Delete the user account<br>` +
+                `• Remove all their challenge submissions<br>` +
+                `• Delete their uploaded photos<br>` +
+                `• Erase all their progress and points<br><br>` +
+                `<strong>This action CANNOT be undone!</strong>`,
+                '⚠️ Delete User Account?'
+            );
+            
+            if (confirmed) {
+                deleteUser(userId, username);
+            }
+        }
+        
+        // Delete user
+        async function deleteUser(userId, username) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert(data.message, 'success');
+                    
+                    // Remove the row from the table with animation
+                    const row = document.getElementById(`user-row-${userId}`);
+                    if (row) {
+                        row.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(-20px)';
+                        setTimeout(() => {
+                            loadUsers(); // Reload the users list
+                        }, 500);
+                    }
+                } else {
+                    showAlert(data.message || 'Failed to delete user.', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                showAlert('Network error. Failed to delete user.', 'error');
+            }
+        }
+        
+        // Show alert using toast
+        function showAlert(message, type) {
+            if (typeof toast !== 'undefined' && toast) {
+                if (type === 'success') {
+                    toast.success(message);
+                } else if (type === 'error') {
+                    toast.error(message);
+                } else {
+                    toast.info(message);
+                }
+            } else {
+                // Fallback to console if toast is not available
+                console.log(`[${type.toUpperCase()}] ${message}`);
+                alert(message);
+            }
+        }
+        
+        // Initialize admin panel
+        window.addEventListener('load', async () => {
+            if (checkAdminAuth()) {
+                await loadUsers();
+                await loadPendingApprovals();
+            }
+        });
+    </script>
+</body>
+</html>

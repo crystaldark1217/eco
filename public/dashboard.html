@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EcoQuest</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-leaf"></i>
+                <span>EcoQuest</span>
+            </div>
+            <div class="nav-links">
+                <a href="/profile">Profile</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Welcome back, <span id="username">Eco Warrior</span>!</h1>
+                <p>Continue your journey towards a sustainable future</p>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <!-- User Stats -->
+            <div class="user-stats">
+                <div class="stat-card card-hover slide-in-left" style="animation-delay: 0.1s;">
+                    <i class="fas fa-star"></i>
+                    <h3 id="user-points">0</h3>
+                    <p>Total Points</p>
+                </div>
+                <div class="stat-card card-hover slide-in-left" style="animation-delay: 0.2s;">
+                    <i class="fas fa-trophy"></i>
+                    <h3 id="user-level">1</h3>
+                    <p>Current Level</p>
+                </div>
+                <div class="stat-card card-hover slide-in-left" style="animation-delay: 0.3s;">
+                    <i class="fas fa-check-circle"></i>
+                    <h3 id="completed-challenges">0</h3>
+                    <p>Challenges Completed</p>
+                </div>
+                <div class="stat-card card-hover slide-in-left" style="animation-delay: 0.4s;">
+                    <i class="fas fa-clock"></i>
+                    <h3 id="pending-approvals">0</h3>
+                    <p>Pending Approvals</p>
+                </div>
+            </div>
+
+            <!-- Environmental Impact Section -->
+            <div class="challenges-section slide-in-right" style="animation-delay: 0.5s;">
+                <h2>
+                    <i class="fas fa-leaf"></i>
+                    Your Environmental Impact
+                </h2>
+                <div class="user-stats">
+                    <div class="stat-card card-hover" style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9);">
+                        <i class="fas fa-cloud" style="color: #4CAF50;"></i>
+                        <h3 id="co2-saved" style="color: #2d5a27;">0 kg</h3>
+                        <p style="color: #4a7c59;">CO₂ Saved</p>
+                    </div>
+                    <div class="stat-card card-hover" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb);">
+                        <i class="fas fa-tint" style="color: #2196F3;"></i>
+                        <h3 id="water-saved" style="color: #1565C0;">0 L</h3>
+                        <p style="color: #1976D2;">Water Saved</p>
+                    </div>
+                    <div class="stat-card card-hover" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2);">
+                        <i class="fas fa-recycle" style="color: #FF9800;"></i>
+                        <h3 id="waste-reduced" style="color: #E65100;">0 kg</h3>
+                        <p style="color: #F57C00;">Waste Reduced</p>
+                    </div>
+                    <div class="stat-card card-hover" style="background: linear-gradient(135deg, #f3e5f5, #e1bee7);">
+                        <i class="fas fa-tree" style="color: #9C27B0;"></i>
+                        <h3 id="trees-equivalent" style="color: #6A1B9A;">0</h3>
+                        <p style="color: #7B1FA2;">Trees Planted</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="challenges-section slide-in-left" style="animation-delay: 0.6s;">
+                <h2>
+                    <i class="fas fa-chart-line"></i>
+                    Level Progress
+                </h2>
+                <div style="background: #e0e0e0; border-radius: 10px; height: 24px; margin-bottom: 1rem; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                    <div id="progress-bar" class="progress-bar-animated" style="background: linear-gradient(135deg, #4CAF50, #45a049); height: 100%; width: 0%; border-radius: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: white; font-weight: 600; font-size: 0.85rem;"></div>
+                </div>
+                <p id="progress-text" style="text-align: center; color: #666; margin-bottom: 2rem; font-weight: 500;">0 / 100 points to next level</p>
+            </div>
+
+            <!-- Available Challenges -->
+            <div class="challenges-section">
+                <h2>Available Challenges</h2>
+                <div id="challenges-container">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Loading challenges...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completed Challenges -->
+            <div class="challenges-section">
+                <h2>Your Completed Challenges</h2>
+                <div id="completed-challenges-container">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Loading completed challenges...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievements Section -->
+            <div class="challenges-section slide-in-right" style="animation-delay: 0.7s;">
+                <h2>
+                    <i class="fas fa-medal"></i>
+                    Your Achievements
+                </h2>
+                <div id="achievements-container">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Loading achievements...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="challenges-section slide-in-left" style="animation-delay: 0.8s;">
+                <h2>
+                    <i class="fas fa-ranking-star"></i>
+                    Community Leaderboard
+                </h2>
+                <div id="leaderboard-container">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Loading leaderboard...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Challenge Completion Modal -->
+    <div id="challenge-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
+            <h3 id="modal-title" style="margin-bottom: 1rem; color: #2d5a27;">Complete Challenge</h3>
+            <p id="modal-description" style="margin-bottom: 1.5rem; color: #666;"></p>
+            
+            <form id="challenge-form">
+                <div class="form-group">
+                    <label for="challenge-photo">
+                        <i class="fas fa-camera"></i>
+                        Upload Photo (Required)
+                    </label>
+                    <input type="file" id="challenge-photo" accept="image/*" required>
+                    <small style="color: #666; font-size: 0.9rem;">
+                        Please upload a photo showing your completed challenge
+                    </small>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">
+                        <i class="fas fa-check"></i>
+                        <span id="submit-text">Submit Challenge</span>
+                        <span id="submit-loading" class="loading" style="display: none;"></span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-leaf"></i>
+                    <span>EcoQuest</span>
+                </div>
+                <div class="footer-links">
+                    <a href="/profile">Profile</a>
+                    <a href="#" onclick="logout()">Logout</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 EcoQuest. Making the world greener, one challenge at a time.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="toast.js"></script>
+    <script src="script.js"></script>
+    <script src="realtime.js"></script>
+    <script src="leaderboard.js"></script>
+    <script>
+        let currentChallengeId = null;
+        let userProfile = null;
+        let challenges = [];
+        let achievements = [];
+        
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token || !user.id) {
+                window.location.href = '/login';
+                return false;
+            }
+            
+            if (user.isAdmin) {
+                window.location.href = '/admin';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+        
+        // Load user profile
+        async function loadUserProfile() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    userProfile = await response.json();
+                    updateUserStats();
+                } else {
+                    throw new Error('Failed to load profile');
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showAlert('Error loading profile. Please refresh the page.', 'error');
+            }
+        }
+        
+        // Update user stats display
+        function updateUserStats() {
+            if (!userProfile) return;
+            
+            document.getElementById('username').textContent = userProfile.username;
+            
+            // Animate numbers
+            animateNumber('user-points', userProfile.points);
+            animateNumber('user-level', userProfile.level);
+            
+            const completedCount = userProfile.completedChallenges.filter(c => c.approved).length;
+            const pendingCount = userProfile.completedChallenges.filter(c => !c.approved).length;
+            
+            animateNumber('completed-challenges', completedCount);
+            animateNumber('pending-approvals', pendingCount);
+            
+            // Update progress bar with animation
+            const currentLevelPoints = userProfile.points % 100;
+            const progressPercentage = currentLevelPoints;
+            const progressBar = document.getElementById('progress-bar');
+            setTimeout(() => {
+                progressBar.style.width = progressPercentage + '%';
+                progressBar.textContent = progressPercentage + '%';
+            }, 100);
+            document.getElementById('progress-text').textContent = `${currentLevelPoints} / 100 points to next level`;
+            
+            // Update environmental impact
+            updateEnvironmentalImpact(completedCount);
+        }
+        
+        // Animate number counting
+        function animateNumber(elementId, targetValue) {
+            const element = document.getElementById(elementId);
+            const startValue = parseInt(element.textContent) || 0;
+            const duration = 1000;
+            const startTime = Date.now();
+            
+            function update() {
+                const currentTime = Date.now();
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const currentValue = Math.floor(startValue + (targetValue - startValue) * progress);
+                element.textContent = currentValue;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+        
+        // Update environmental impact
+        function updateEnvironmentalImpact(completedCount) {
+            const co2Saved = (completedCount * 2.5).toFixed(1);
+            const waterSaved = completedCount * 15;
+            const wasteReduced = (completedCount * 0.8).toFixed(1);
+            const treesEquivalent = Math.floor(completedCount / 4);
+            
+            animateNumber('co2-saved', parseFloat(co2Saved));
+            document.getElementById('co2-saved').textContent = co2Saved + ' kg';
+            
+            animateNumber('water-saved', waterSaved);
+            document.getElementById('water-saved').textContent = waterSaved + ' L';
+            
+            animateNumber('waste-reduced', parseFloat(wasteReduced));
+            document.getElementById('waste-reduced').textContent = wasteReduced + ' kg';
+            
+            animateNumber('trees-equivalent', treesEquivalent);
+        }
+        
+        // Load challenges
+        async function loadChallenges() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/challenges', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    challenges = await response.json();
+                    displayChallenges();
+                    displayCompletedChallenges();
+                } else {
+                    throw new Error('Failed to load challenges');
+                }
+            } catch (error) {
+                console.error('Error loading challenges:', error);
+                document.getElementById('challenges-container').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #f44336;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Error loading challenges. Please refresh the page.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Display available challenges
+        function displayChallenges() {
+            const container = document.getElementById('challenges-container');
+            
+            if (challenges.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>No challenges available at the moment.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const completedChallengeIds = userProfile.completedChallenges.map(c => c.challengeId);
+            const availableChallenges = challenges.filter(c => !completedChallengeIds.includes(c._id));
+            
+            if (availableChallenges.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-trophy" style="font-size: 2rem; margin-bottom: 1rem; color: #4CAF50;"></i>
+                        <p>Congratulations! You've completed all available challenges.</p>
+                        <p>Check back later for new challenges!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = availableChallenges.map(challenge => `
+                <div class="challenge-item">
+                    <div class="challenge-header">
+                        <div>
+                            <div class="challenge-title">${challenge.title}</div>
+                            <div style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">
+                                <i class="fas fa-tag"></i> ${challenge.category} • 
+                                <i class="fas fa-clock"></i> ${challenge.type}
+                            </div>
+                        </div>
+                        <div class="challenge-points">${challenge.points} Points</div>
+                    </div>
+                    <div class="challenge-description">${challenge.description}</div>
+                    <div class="challenge-actions">
+                        <button class="btn btn-primary" onclick="openChallengeModal('${challenge._id}')">
+                            <i class="fas fa-play"></i>
+                            Start Challenge
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Display completed challenges
+        function displayCompletedChallenges() {
+            const container = document.getElementById('completed-challenges-container');
+            
+            if (!userProfile.completedChallenges || userProfile.completedChallenges.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>You haven't completed any challenges yet.</p>
+                        <p>Start with the challenges above!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = userProfile.completedChallenges.map(completion => {
+                const challenge = challenges.find(c => c._id === completion.challengeId);
+                if (!challenge) return '';
+                
+                const statusIcon = completion.approved ? 
+                    '<i class="fas fa-check-circle" style="color: #4CAF50;"></i>' : 
+                    '<i class="fas fa-clock" style="color: #FF9800;"></i>';
+                
+                const statusText = completion.approved ? 'Approved' : 'Pending Approval';
+                
+                return `
+                    <div class="challenge-item">
+                        <div class="challenge-header">
+                            <div>
+                                <div class="challenge-title">${challenge.title}</div>
+                                <div style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">
+                                    Completed on ${new Date(completion.completedAt).toLocaleDateString()}
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                ${statusIcon}
+                                <span style="color: ${completion.approved ? '#4CAF50' : '#FF9800'}; font-weight: 600;">
+                                    ${statusText}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="challenge-description">${challenge.description}</div>
+                        ${completion.photoUrl ? `
+                            <div style="margin-top: 1rem;">
+                                <img src="${completion.photoUrl}" alt="Challenge completion" 
+                                     style="max-width: 200px; border-radius: 8px; cursor: pointer;"
+                                     onclick="window.open('${completion.photoUrl}', '_blank')">
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Open challenge modal
+        function openChallengeModal(challengeId) {
+            const challenge = challenges.find(c => c._id === challengeId);
+            if (!challenge) return;
+            
+            currentChallengeId = challengeId;
+            document.getElementById('modal-title').textContent = challenge.title;
+            document.getElementById('modal-description').textContent = challenge.description;
+            document.getElementById('challenge-modal').style.display = 'block';
+        }
+        
+        // Close challenge modal
+        function closeModal() {
+            document.getElementById('challenge-modal').style.display = 'none';
+            document.getElementById('challenge-form').reset();
+            currentChallengeId = null;
+        }
+        
+        // Submit challenge
+        document.getElementById('challenge-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentChallengeId) return;
+            
+            const photo = document.getElementById('challenge-photo').files[0];
+            const submitText = document.getElementById('submit-text');
+            const submitLoading = document.getElementById('submit-loading');
+            
+            if (!photo) {
+                showAlert('Please upload a photo to complete the challenge.', 'error');
+                return;
+            }
+            
+            // Show loading state
+            submitText.style.display = 'none';
+            submitLoading.style.display = 'inline-block';
+            
+            try {
+                const formData = new FormData();
+                formData.append('photo', photo);
+                
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/challenges/${currentChallengeId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Challenge submitted successfully! Awaiting admin approval.', 'success');
+                    closeModal();
+                    // Reload data
+                    await loadUserProfile();
+                    displayChallenges();
+                    displayCompletedChallenges();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error submitting challenge. Please try again.', 'error');
+            } finally {
+                // Reset loading state
+                submitText.style.display = 'inline';
+                submitLoading.style.display = 'none';
+            }
+        });
+        
+        // Show alert using toast
+        function showAlert(message, type) {
+            if (typeof toast !== 'undefined') {
+                if (type === 'success') {
+                    toast.success(message);
+                } else if (type === 'error') {
+                    toast.error(message);
+                } else {
+                    toast.info(message);
+                }
+            } else {
+                // Fallback to old alert system
+                const alertContainer = document.getElementById('alert-container');
+                const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+                const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+                
+                alertContainer.innerHTML = `
+                    <div class="alert ${alertClass} fade-in">
+                        <i class="fas ${icon}"></i>
+                        ${message}
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    const alert = alertContainer.querySelector('.alert');
+                    if (alert) {
+                        alert.classList.add('fade-out');
+                        setTimeout(() => {
+                            alertContainer.innerHTML = '';
+                        }, 300);
+                    }
+                }, 5000);
+            }
+        }
+        
+        // Load achievements
+        async function loadAchievements() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/achievements', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    achievements = result.data;
+                    displayAchievements();
+                } else {
+                    throw new Error('Failed to load achievements');
+                }
+            } catch (error) {
+                console.error('Error loading achievements:', error);
+                document.getElementById('achievements-container').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #f44336;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Error loading achievements. Please refresh the page.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Display achievements
+        function displayAchievements() {
+            const container = document.getElementById('achievements-container');
+            
+            if (achievements.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <h3 class="empty-state-title">No Achievements Yet</h3>
+                        <p class="empty-state-description">Complete challenges to unlock achievements!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const unlockedAchievements = achievements.filter(a => a.unlocked);
+            const lockedAchievements = achievements.filter(a => !a.unlocked);
+            
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">';
+            
+            // Show unlocked achievements first
+            unlockedAchievements.forEach(achievement => {
+                html += `
+                    <div class="achievement-card unlocked card-hover" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; border: 2px solid ${achievement.color};">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 1rem; background: ${achievement.color}; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px ${achievement.color}40;">
+                            <i class="fas ${achievement.icon}" style="font-size: 1.8rem; color: white;"></i>
+                        </div>
+                        <h4 style="color: #2d5a27; margin-bottom: 0.5rem; font-size: 1.1rem;">${achievement.name}</h4>
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">${achievement.description}</p>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: ${achievement.color}; font-weight: 600; font-size: 0.9rem;">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Unlocked!</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Show locked achievements
+            lockedAchievements.forEach(achievement => {
+                const progressPercent = Math.min((achievement.progress / achievement.requirement) * 100, 100);
+                html += `
+                    <div class="achievement-card locked" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; opacity: 0.6; border: 2px solid #e0e0e0;">
+                        <div style="width: 60px; height: 60px; margin: 0 auto 1rem; background: #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas ${achievement.icon}" style="font-size: 1.8rem; color: #999;"></i>
+                        </div>
+                        <h4 style="color: #999; margin-bottom: 0.5rem; font-size: 1.1rem;">${achievement.name}</h4>
+                        <p style="color: #999; font-size: 0.9rem; margin-bottom: 0.75rem;">${achievement.description}</p>
+                        <div style="background: #f0f0f0; border-radius: 10px; height: 8px; overflow: hidden; margin-bottom: 0.5rem;">
+                            <div style="background: ${achievement.color}; height: 100%; width: ${progressPercent}%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <div style="color: #999; font-size: 0.85rem;">
+                            ${achievement.progress} / ${achievement.requirement}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Initialize dashboard
+        window.addEventListener('load', async () => {
+            if (!checkAuth()) return;
+            
+            await loadUserProfile();
+            await loadChallenges();
+            await loadAchievements();
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('challenge-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'challenge-modal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
