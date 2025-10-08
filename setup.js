@@ -52,7 +52,7 @@ NODE_ENV=development
 
 # Database Configuration
 # For local MongoDB (default):
-MONGODB_URI=mongodb://localhost:27017/ecoquest
+MONGODB_URI=mongodb+srv://poroject:project@cluster0.pl3dl2i.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
 
 # For MongoDB Atlas (cloud database):
 # MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/ecoquest?retryWrites=true&w=majority
